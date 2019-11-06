@@ -126,30 +126,7 @@ def construct_feed_dict(features, support, labels, labels_mask, placeholders):
     return feed_dict
 
 
-def simple_solution(dataset, adj, improved_features, num_hop):
-    dis_matrix = sp.csgraph.shortest_path(adj, directed=False, unweighted=True)
-    add_adj = sp.lil_matrix((adj.shape[0], adj.shape[0]))
-    file = "simple_dir/%s_alpha_%s.npy" % (dataset, num_hop)
-    alpha_node = np.zeros(shape=adj.shape[0])
-    if os.path.exists(file):
-        alpha_node = np.load(file)
-    else:
-        adj_features = normalize_adj(adj + sp.eye(adj.shape[0])).dot(improved_features)
-        loss_node = 1e9 * np.ones(shape=adj.shape[0])
-        for i in trange(0, 100):
-            add_adj[np.where(dis_matrix == num_hop)] = 0.01 * i
-            diff_feature_matrix = add_adj.dot(improved_features) - adj_features
-            loss_cur = diff_feature_matrix.dot(diff_feature_matrix.T).diagonal()
-            for j in range(adj.shape[0]):
-                if loss_cur[j] < loss_node[j]:
-                    loss_node[j] = loss_cur[j]
-                    alpha_node[j] = 0.01 * i
-        np.save("simple_dir/%s_alpha_%s" % (dataset, num_hop), alpha_node)
-
-    return alpha_node
-
-
-def split_dataset(labels, train_size, test_size):
+def split_dataset(labels, train_size, val_size, test_size):
     
     label_pairs = np.where(labels == 1)
     label2nodes = {}
@@ -162,12 +139,13 @@ def split_dataset(labels, train_size, test_size):
             label2nodes[label].append(node)
 
     idx_train = []
-    idx_test = []
+    idx = []
     for key in label2nodes.keys():
         random.shuffle(label2nodes[key])
         idx_train += label2nodes[key][:train_size]
-        idx_test += label2nodes[key][train_size:]
+        idx += label2nodes[key][train_size:]
 
-    random.shuffle(idx_test)
-    idx_test = idx_test[:test_size]
-    return idx_train, idx_test
+    random.shuffle(idx)
+    idx_validation = idx[:val_size]
+    idx_test = idx[val_size:val_size+test_size]
+    return idx_train, idx_validation, idx_test
