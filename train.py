@@ -39,17 +39,22 @@ adj, features, labels = load_data(FLAGS.dataset)
 
 add_adj = 0
 weight_matrix = 0
+path_finding_start = time.time()
+dis_matrix = sp.csgraph.shortest_path(adj, directed=False, unweighted=True)
+shortest_path_time = time.time() - path_finding_start
+with open('time_log.txt', 'a') as f:
+    f.write("Shortest path finding time for %s: %s\n" %(FLAGS.dataset, shortest_path_time))
 if FLAGS.higher:
     for num_hop in range(2, FLAGS.max_order + 1):
         solution_file = 'solutions/%s_%s.npz' % (FLAGS.dataset, num_hop)
         if os.path.exists(solution_file):
             add_adj = sp.load_npz(solution_file)
         else:
+            pretrain_start = time.time()
             num_nodes = adj.shape[0]
             add_adj = sp.lil_matrix((num_nodes, num_nodes))
             features = normalize_features(features)
             adj_features = normalize_adj(adj + sp.eye(num_nodes)).dot(features)
-            dis_matrix = sp.csgraph.shortest_path(adj, directed=False, unweighted=True)
             row, col = np.where(dis_matrix == num_hop)[0], np.where(dis_matrix == num_hop)[1]
             care_num = [0] + [i for i in trange(1, row.shape[0]) if row[i] != row[i - 1]] + [row.shape[0]]
             nodes_alpha = np.zeros(num_nodes)
@@ -84,17 +89,16 @@ if FLAGS.higher:
                 return i, res.x
 
             pool = Pool(os.cpu_count())
-            pretrain_start = time.time()
             results = list(pool.map(matrix_solutions, range(1, len(care_num))))
-            pretrain_time = time.time() - pretrain_start
-            with open('time_log.txt', 'a') as f:
-                f.write("Pretraining time for %s of %s-th order matrix: %s\n" %(FLAGS.dataset, num_hop, pretrain_time))
+            pool.close()
+            pool.join()
             for k in trange(len(results)):
                 i, sv_x = results[k]
                 for j in range(care_num[i - 1], care_num[i]):
                     add_adj[row[j], col[j]] = sv_x[j - care_num[i - 1]]
-            pool.close()
-            pool.join()
+            pretrain_time = time.time() - pretrain_start
+            with open('time_log.txt', 'a') as f:
+                f.write("Pretraining time for %s of %s-th order matrix: %s\n" %(FLAGS.dataset, num_hop, pretrain_time))
             sp.save_npz("solutions/%s_%s.npz" % (FLAGS.dataset, num_hop), add_adj.tocsr())
         weight_matrix += add_adj
 
@@ -123,7 +127,7 @@ features = preprocess_features(features)
 support = [preprocess_adj(weight_matrix + adj)]
 num_supports = 1
 
-start = time.time()
+train_start = time.time()
 for i in trange(FLAGS.runs, desc='Random splits'):
     train_mask, val_mask, test_mask = all_train_mask[i], all_val_mask[i], all_test_mask[i]
     y_train, y_val, y_test = all_y_train[i], all_y_val[i], all_y_test[i]
@@ -177,7 +181,7 @@ for i in trange(FLAGS.runs, desc='Random splits'):
 
     print("Test set results:", "accuracy=", "{:.5f}".format(test_acc))
 
-run_time = time.time() - start
+run_time = time.time() - train_start
 
 with open('time_log.txt', 'w') as f:
     f.write("Run time for %s of %s runs: %s\n" %(FLAGS.cora, FLAGS.runs, run_time))
