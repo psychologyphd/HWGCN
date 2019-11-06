@@ -146,6 +146,6 @@ def split_dataset(labels, train_size, val_size, test_size):
         idx += label2nodes[key][train_size:]
 
     random.shuffle(idx)
-    idx_validation = idx[:val_size]
+    idx_val = idx[:val_size]
     idx_test = idx[val_size:val_size+test_size]
-    return idx_train, idx_validation, idx_test
+    return idx_train, idx_val, idx_test

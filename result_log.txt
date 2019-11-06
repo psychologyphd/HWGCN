@@ -1,0 +1,7 @@
+
+Mean accuracy of 50 runs for cora of 2-th order matrix: 0.79539907
+Deviation of 50 runs for cora of 2-th order matrix: 0.021026677
+Mean accuracy of 50 runs for cora of 2-th order matrix: 0.79539907
+Deviation of 50 runs for cora of 2-th order matrix: 0.021026677
+Mean accuracy of 50 runs for cora of 2-th order matrix: 0.79539907
+Deviation of 50 runs for cora of 2-th order matrix: 0.021026677

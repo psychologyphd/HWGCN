@@ -22,7 +22,6 @@ flags.DEFINE_string('dataset', 'cora', 'Dataset string.')  # 'cora', 'citeseer',
 flags.DEFINE_float('learning_rate', 0.01, 'Initial learning rate.')
 flags.DEFINE_integer('epochs', 200, 'Number of epochs to train.')
 flags.DEFINE_integer('hidden1', 16, 'Number of units in hidden layer 1.')
-flags.DEFINE_integer('samples', 50, 'Number of samples to train.')
 flags.DEFINE_integer('train_size', 20, 'The size of training dataset.')
 flags.DEFINE_integer('val_size', 500, 'The size of validation dataset.')
 flags.DEFINE_integer('test_size', 1000, 'The size of test dataset.')
@@ -36,7 +35,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 # Load data
 adj, features, labels = load_data(FLAGS.dataset)
-
+'''
 add_adj = 0
 weight_matrix = 0
 path_finding_start = time.time()
@@ -101,7 +100,7 @@ if FLAGS.higher:
                 f.write("Pretraining time for %s of %s-th order matrix: %s\n" %(FLAGS.dataset, num_hop, pretrain_time))
             sp.save_npz("solutions/%s_%s.npz" % (FLAGS.dataset, num_hop), add_adj.tocsr())
         weight_matrix += add_adj
-
+'''
 all_train_mask, all_val_mask, all_test_mask = [], [], []
 all_y_train, all_y_val, all_y_test = [], [], [] 
 for i in range(FLAGS.runs):
@@ -124,10 +123,11 @@ for i in range(FLAGS.runs):
     all_y_test.append(y_test)
 
 features = preprocess_features(features)
-support = [preprocess_adj(weight_matrix + adj)]
+support = [preprocess_adj(adj)]
 num_supports = 1
 
 train_start = time.time()
+all_test_acc = []
 for i in trange(FLAGS.runs, desc='Random splits'):
     train_mask, val_mask, test_mask = all_train_mask[i], all_val_mask[i], all_test_mask[i]
     y_train, y_val, y_test = all_y_train[i], all_y_val[i], all_y_test[i]
@@ -163,7 +163,6 @@ for i in trange(FLAGS.runs, desc='Random splits'):
     # Train model
     for epoch in range(FLAGS.epochs):
 
-        t = time.time()
         # Construct feed dictionary
         feed_dict = construct_feed_dict(features, support, y_train, train_mask, placeholders)
         feed_dict.update({placeholders['dropout']: FLAGS.dropout})
@@ -180,8 +179,15 @@ for i in trange(FLAGS.runs, desc='Random splits'):
 
 
     print("Test set results:", "accuracy=", "{:.5f}".format(test_acc))
+    all_test_acc.append(test_acc)
 
 run_time = time.time() - train_start
 
-with open('time_log.txt', 'w') as f:
-    f.write("Run time for %s of %s runs: %s\n" %(FLAGS.cora, FLAGS.runs, run_time))
+with open('time_log.txt', 'a') as f:
+    f.write("Run time for %s of %s runs: %s\n" %(FLAGS.dataset, FLAGS.runs, run_time))
+
+with open('result_log.txt', 'a') as f:
+    f.write("Mean accuracy of %s runs for %s of %s-th order matrix: %s\n" %(FLAGS.runs, FLAGS.dataset, FLAGS.max_order, np.mean(all_test_acc)))
+
+with open('result_log.txt', 'a') as f:
+    f.write("Deviation of %s runs for %s of %s-th order matrix: %s\n" %(FLAGS.runs, FLAGS.dataset, FLAGS.max_order, np.std(all_test_acc)))
