@@ -35,7 +35,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 # Load data
 adj, features, labels = load_data(FLAGS.dataset)
-'''
+
 add_adj = 0
 weight_matrix = 0
 path_finding_start = time.time()
@@ -65,7 +65,6 @@ if FLAGS.higher:
                     sum_feature += features[col[j]]
                 nodes_alpha[central_idx] = sum_feature.dot(central_feature.T) / sum_feature.dot(sum_feature.T)
 
-            
             def matrix_solutions(i):
                 diff_feature_vectors = sp.vstack([features[col[j]] - adj_features[row[j]]
                                                 for j in range(care_num[i - 1], care_num[i])])
@@ -83,7 +82,7 @@ if FLAGS.higher:
                 qp_l = np.hstack([l, b])
                 qp_u = np.hstack([h, b])
                 osqp = OSQP()
-                osqp.setup(P=P, q=q, A=qp_A, l=qp_l, u=qp_u, verbose=False)
+                osqp.setup(P=P, q=q, A=qp_A, l=qp_l, u=qp_u, verbose=False, max_iter=10)
                 res = osqp.solve()
                 return i, res.x
 
@@ -98,9 +97,9 @@ if FLAGS.higher:
             pretrain_time = time.time() - pretrain_start
             with open('time_log.txt', 'a') as f:
                 f.write("Pretraining time for %s of %s-th order matrix: %s\n" %(FLAGS.dataset, num_hop, pretrain_time))
-            sp.save_npz("solutions/%s_%s.npz" % (FLAGS.dataset, num_hop), add_adj.tocsr())
+            #sp.save_npz("solutions/%s_%s.npz" % (FLAGS.dataset, num_hop), add_adj.tocsr())
         weight_matrix += add_adj
-'''
+
 all_train_mask, all_val_mask, all_test_mask = [], [], []
 all_y_train, all_y_val, all_y_test = [], [], [] 
 for i in range(FLAGS.runs):
@@ -123,7 +122,7 @@ for i in range(FLAGS.runs):
     all_y_test.append(y_test)
 
 features = preprocess_features(features)
-support = [preprocess_adj(adj)]
+support = [preprocess_adj(adj + weight_matrix)]
 num_supports = 1
 
 train_start = time.time()
