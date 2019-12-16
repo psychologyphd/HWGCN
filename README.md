@@ -2,7 +2,7 @@
 
 Higher-order Weighted Graph Convolutional Networks (Songtao Liu et.al.): https://arxiv.org/abs/1911.04129
 
-The is a TensorFlow implementation of Higher-order Weighted Graph Convolutional Networks, we reference the implementation of [GCN](https://github.com/tkipf/gcn)
+This is a TensorFlow implementation of Higher-order Weighted Graph Convolutional Networks, we reference the implementation of [GCN](https://github.com/tkipf/gcn)
 
 ![comp](https://user-images.githubusercontent.com/33899401/70893840-d3a6ee00-2026-11ea-8747-4f9a6e31d247.jpg)
 ## Requirements
