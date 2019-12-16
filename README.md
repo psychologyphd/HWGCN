@@ -27,5 +27,5 @@ If you use the code, please cite our paper:
   author={Liu, Songtao and Chen, Lingwei and Dong, Hanze and Wang, Zihao and Wu, Dinghao and Huang, Zengfeng},
   journal={arXiv preprint arXiv:1911.04129},
   year={2019}
-} ![](../../../Downloads/comp.pdf) 
+} 
 ```
