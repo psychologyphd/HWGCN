@@ -1,5 +1,0 @@
-Shortest path finding time for cora: 2.38853120803833
-Pretraining time for cora of 2-th order matrix: 5.495695114135742
-Pretraining time for cora of 3-th order matrix: 8.470616817474365
-Pretraining time for cora of 4-th order matrix: 29.98512601852417
-Pretraining time for cora of 5-th order matrix: 76.07806491851807
