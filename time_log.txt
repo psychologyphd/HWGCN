@@ -1,14 +1,5 @@
-Run time for cora of 50 runs: 217.2286639213562
-Shortest path finding time for cora: 2.3629260063171387
-Shortest path finding time for cora: 2.6069090366363525
-Run time for cora of 50 runs: 181.7957148551941
-Run time for cora of 50 runs: 244.88333702087402
-Shortest path finding time for cora: 2.431536912918091
-Run time for cora of 50 runs: 231.92239809036255
-Shortest path finding time for cora: 2.422909736633301
-Shortest path finding time for cora: 2.4971609115600586
-Shortest path finding time for cora: 2.508284091949463
-Run time for cora of 50 runs: 161.9810311794281
-Run time for cora of 50 runs: 168.3644621372223
-Run time for cora of 50 runs: 184.2986741065979
-Run time for cora of 50 runs: 172.06785082817078
+Shortest path finding time for cora: 2.38853120803833
+Pretraining time for cora of 2-th order matrix: 5.495695114135742
+Pretraining time for cora of 3-th order matrix: 8.470616817474365
+Pretraining time for cora of 4-th order matrix: 29.98512601852417
+Pretraining time for cora of 5-th order matrix: 76.07806491851807
