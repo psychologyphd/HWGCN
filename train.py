@@ -55,19 +55,18 @@ if FLAGS.higher:
             features = normalize_features(features)
             adj_features = normalize_adj(adj + sp.eye(num_nodes)).dot(features)
             row, col = np.where(dis_matrix == num_hop)[0], np.where(dis_matrix == num_hop)[1]
-            care_num = [0] + [i for i in trange(1, row.shape[0]) if row[i] != row[i - 1]] + [row.shape[0]]
+            care_num = [0] + [i for i in range(1, row.shape[0]) if row[i] != row[i - 1]] + [row.shape[0]]
             nodes_alpha = np.zeros(num_nodes)
-            for i in trange(1, len(care_num)):
+            for i in range(1, len(care_num)):
                 sum_feature = 0
                 central_idx = row[care_num[i-1]]
                 central_feature = adj_features[central_idx]
-                for j in range(care_num[i-1], care_num[i]):
-                    sum_feature += features[col[j]]
+                sum_feature = sp.csr_matrix(np.ones(care_num[i]-care_num[i-1])).dot(features[col[list(range(care_num[i-1], care_num[i]))]])
                 nodes_alpha[central_idx] = sum_feature.dot(central_feature.T) / sum_feature.dot(sum_feature.T)
-
+            
             def matrix_solutions(i):
-                diff_feature_vectors = sp.vstack([features[col[j]] - adj_features[row[j]]
-                                                for j in range(care_num[i - 1], care_num[i])])
+                care_num_list = list(range(care_num[i-1], care_num[i]))
+                diff_feature_vectors = features[col[care_num_list]] - adj_features[row[care_num_list]]
                 diff_feature_matrix = diff_feature_vectors.dot(diff_feature_vectors.T)
                 P = 2 * diff_feature_matrix
                 q = np.zeros(diff_feature_matrix.shape[0], dtype=np.double)
@@ -90,11 +89,11 @@ if FLAGS.higher:
             results = list(pool.map(matrix_solutions, range(1, len(care_num))))
             pool.close()
             pool.join()
-            for k in trange(len(results)):
+            pretrain_time = time.time() - pretrain_start
+            for k in range(len(results)):
                 i, sv_x = results[k]
                 for j in range(care_num[i - 1], care_num[i]):
                     add_adj[row[j], col[j]] = sv_x[j - care_num[i - 1]]
-            pretrain_time = time.time() - pretrain_start
             with open('time_log.txt', 'a') as f:
                 f.write("Pretraining time for %s of %s-th order matrix: %s\n" %(FLAGS.dataset, num_hop, pretrain_time))
             #sp.save_npz("solutions/%s_%s.npz" % (FLAGS.dataset, num_hop), add_adj.tocsr())
@@ -121,6 +120,7 @@ for i in range(FLAGS.runs):
     all_y_val.append(y_val)
     all_y_test.append(y_test)
 
+#weight_matrix = 0
 features = preprocess_features(features)
 support = [preprocess_adj(adj + weight_matrix)]
 num_supports = 1
